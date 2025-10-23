@@ -35,7 +35,7 @@ TransformAnimation::TransformAnimation(std::string const &filename) {
 		throw std::runtime_error("xff0 chunk in '" + filename + "' contains a partial frame.");
 	}
 
-	frames = frames_data.size() / names.size();
+	frames = uint32_t(frames_data.size() / names.size());
 
 	if (frames == 0) {
 		throw std::runtime_error("Animation in '" + filename + "' contains zero frames.");
@@ -62,33 +62,33 @@ void TransformAnimationPlayer::update(float elapsed) {
 	frame += frames_per_second * elapsed;
 
 	//floor to nearest frame:
-	int32_t iframe = int32_t(std::floor(frame)); // animation.frames - 1
-	int32_t iframe2 = iframe + 1; //animation.frames
-	float amt = frame - iframe;
+	int32_t iframe0 = int32_t(std::floor(frame)); // animation.frames - 1
+	int32_t iframe1 = iframe0 + 1; //animation.frames
+	float amt = frame - iframe0;
 
 	//hold first/last frame if out of range:
-	if (iframe < 0) {
-		iframe = 0;
-		iframe2 = iframe;
+	if (iframe0 < 0) {
+		iframe0 = 0;
+		iframe1 = iframe0;
 		amt = 0.0f;
 	}
-	if (iframe2 >= int32_t(animation.frames)) { 
-		iframe = int32_t(animation.frames) - 1;
-		iframe2 = iframe;
+	if (iframe1 >= int32_t(animation.frames)) { 
+		iframe0 = int32_t(animation.frames) - 1;
+		iframe1 = iframe0;
 		amt = 0.0f;
 	}
-	assert(iframe >= 0 && iframe < int32_t(animation.frames));
-	assert(iframe2 >= 0 && iframe2 < int32_t(animation.frames));
+	assert(iframe0 >= 0 && iframe0 < int32_t(animation.frames));
+	assert(iframe1 >= 0 && iframe1 < int32_t(animation.frames));
 
 	//copy data from animation to transforms:
-	TransformAnimation::TRS const *frame = animation.frames_data.data() + (animation.names.size() * iframe);
-	TransformAnimation::TRS const *frame2 = animation.frames_data.data() + (animation.names.size() * iframe2);
+	TransformAnimation::TRS const *frame0 = animation.frames_data.data() + (animation.names.size() * iframe0);
+	TransformAnimation::TRS const *frame1 = animation.frames_data.data() + (animation.names.size() * iframe1);
 	assert(transforms.size() == animation.names.size());
 	for (uint32_t i = 0; i < transforms.size(); ++i) {
 		if (transforms[i] != nullptr) {
-			transforms[i]->position = glm::mix(frame[i].translation, frame2[i].translation, amt);
-			transforms[i]->rotation = glm::slerp(frame[i].rotation, frame2[i].rotation, amt);
-			transforms[i]->scale = glm::mix(frame[i].scale, frame2[i].scale, amt);
+			transforms[i]->position = glm::mix(frame0[i].translation, frame1[i].translation, amt);
+			transforms[i]->rotation = glm::slerp(frame0[i].rotation, frame1[i].rotation, amt);
+			transforms[i]->scale = glm::mix(frame0[i].scale, frame1[i].scale, amt);
 		}
 	}
 }
