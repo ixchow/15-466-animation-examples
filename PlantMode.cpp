@@ -103,10 +103,10 @@ PlantMode::PlantMode() {
 
 			Scene::Transform *transform = scene.new_transform();
 			transform->position.x = x * 2.5f;
-			Scene::Object *plant = scene.new_object(transform);
-			plant->programs[Scene::Object::ProgramTypeDefault] = plant_info;
+			Scene::Object *plant_ = scene.new_object(transform);
+			plant_->programs[Scene::Object::ProgramTypeDefault] = plant_info;
 
-			if (x == 0) this->plant = plant;
+			if (x == 0) this->plant = plant_;
 		};
 		assert(plant_animations.size() == 5);
 	}
