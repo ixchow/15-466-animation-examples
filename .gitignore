@@ -5,7 +5,5 @@ dist/game.exe
 dist/SDL3.dll
 dist/README-SDL.txt
 dist/README-glm.txt
-dist/README-libogg.txt
-dist/README-libopus.txt
 dist/README-libpng.txt
-dist/README-opusfile.txt
+maek-cache.json
