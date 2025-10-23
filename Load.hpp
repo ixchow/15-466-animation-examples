@@ -25,6 +25,7 @@
 
 #include <functional>
 #include <stdexcept>
+#include <cstdint>
 
 enum LoadTag : uint32_t {
 	LoadTagInit = 0, //used for loading mesh and texture blobs before main
