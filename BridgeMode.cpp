@@ -67,8 +67,8 @@ Load< Scene > bridge_scene(LoadTagDefault, [](){
 	//look up various transforms:
 	std::unordered_map< std::string, Scene::Transform * > name_to_transform;
 	for (Scene::Transform *t = ret->first_transform; t != nullptr; t = t->alloc_next) {
-		auto ret = name_to_transform.insert(std::make_pair(t->name, t));
-		if (!ret.second) {
+		auto res = name_to_transform.insert(std::make_pair(t->name, t));
+		if (!res.second) {
 			std::cerr << "WARNING: multiple transforms with the name '" << t->name << "' in scene." << std::endl;
 		}
 	}
