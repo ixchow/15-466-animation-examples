@@ -105,23 +105,23 @@ BridgeMode::~BridgeMode() {
 
 bool BridgeMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 	//ignore any keys that are the result of automatic key repeat:
-	if (evt.type == SDL_KEYDOWN && evt.key.repeat) {
+	if (evt.type == SDL_EVENT_KEY_DOWN && evt.key.repeat) {
 		return false;
 	}
 
-	if (evt.type == SDL_KEYDOWN && evt.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+	if (evt.type == SDL_EVENT_KEY_DOWN && evt.key.key == SDLK_SPACE) {
 		if (current_animations.empty()) {
 			current_animations.emplace_back(*bridge_deploy_tanim, bridge_deploy_transforms, 0.1f);
 		}
 		return true;
 	}
-	if (evt.type == SDL_KEYDOWN && evt.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+	if (evt.type == SDL_EVENT_KEY_DOWN && evt.key.key == SDLK_ESCAPE) {
 		menu->background = shared_from_this();
 		Mode::set_current(menu);
 		return true;
 	}
 
-	if (evt.type == SDL_MOUSEMOTION) {
+	if (evt.type == SDL_EVENT_MOUSE_MOTION) {
 	}
 
 	return false;

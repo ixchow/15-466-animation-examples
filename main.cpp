@@ -1,9 +1,6 @@
 //Mode.hpp declares the "Mode::current" static member variable, which is used to decide where event-handling, updating, and drawing events go:
 #include "Mode.hpp"
 
-//Load.hpp is included because of the call_load_functions() call:
-#include "Load.hpp"
-
 //The 'MenuMode' allows menu selections:
 #include "MenuMode.hpp"
 
@@ -13,49 +10,47 @@
 //The 'PlantMode' is an example of bone animations:
 #include "PlantMode.hpp"
 
-//The 'Sound' header has functions for managing sound:
-#include "Sound.hpp"
+//For asset loading:
+#include "Load.hpp"
 
 //GL.hpp will include a non-namespace-polluting set of opengl prototypes:
 #include "GL.hpp"
 
-//Includes for libSDL:
-#include <SDL.h>
+//for screenshots:
+#include "load_save_png.hpp"
 
-//...and for glm:
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+//Includes for libSDL:
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 //...and for c++ standard library functions:
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
-#include <fstream>
 #include <memory>
 #include <algorithm>
 
+
 std::shared_ptr< MenuMode > menu;
 
+#ifdef _WIN32
+extern "C" { uint32_t GetACP(); }
+#endif
 int main(int argc, char **argv) {
 #ifdef _WIN32
-	try {
-#endif
-	struct {
-		//TODO: this is where you set the title and size of your game window
-		std::string title = "Animation Examples";
-		glm::uvec2 size = glm::uvec2(640, 400);
-	} config;
-
-	/*
-	//----- start connection to server ----
-	if (argc != 3) {
-		std::cout << "Usage:\n\t./client <host> <port>" << std::endl;
-		return 1;
+	{ //when compiled on windows, check that code page is forced to utf-8 (makes file loading/saving work right):
+		//see: https://docs.microsoft.com/en-us/windows/apps/design/globalizing/use-utf8-code-page
+		uint32_t code_page = GetACP();
+		if (code_page == 65001) {
+			std::cout << "Code page is properly set to UTF-8." << std::endl;
+		} else {
+			std::cout << "WARNING: code page is set to " << code_page << " instead of 65001 (UTF-8). Some file handling functions may fail." << std::endl;
+		}
 	}
 
-	Client client(argv[1], argv[2]);
-	*/
+	//when compiled on windows, unhandled exceptions don't have their message printed, which can make debugging simple issues difficult.
+	try {
+#endif
 
 	//------------  initialization ------------
 
@@ -77,55 +72,52 @@ int main(int argc, char **argv) {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
 	//create window:
-	SDL_Window *window = SDL_CreateWindow(
-		config.title.c_str(),
-		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		config.size.x, config.size.y,
-		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI
+	Mode::window = SDL_CreateWindow(
+		"Animation Examples", //TODO: remember to set a title for your game!
+		1280, 720, //TODO: modify window size if you'd like
+		SDL_WINDOW_OPENGL
+		| SDL_WINDOW_RESIZABLE //uncomment to allow resizing
+		| SDL_WINDOW_HIGH_PIXEL_DENSITY //uncomment for full resolution on high-DPI screens
 	);
 
 	//prevent exceedingly tiny windows when resizing:
-	SDL_SetWindowMinimumSize(window, 100, 100);
+	SDL_SetWindowMinimumSize(Mode::window,100,100);
 
-	if (!window) {
+	if (!Mode::window) {
 		std::cerr << "Error creating SDL window: " << SDL_GetError() << std::endl;
 		return 1;
 	}
 
 	//Create OpenGL context:
-	SDL_GLContext context = SDL_GL_CreateContext(window);
+	SDL_GLContext context = SDL_GL_CreateContext(Mode::window);
 
 	if (!context) {
-		SDL_DestroyWindow(window);
+		SDL_DestroyWindow(Mode::window);
 		std::cerr << "Error creating OpenGL context: " << SDL_GetError() << std::endl;
 		return 1;
 	}
 
-	#ifdef _WIN32
-	//On windows, load OpenGL extensions:
-	init_gl_shims();
-	#endif
+	//On windows, load OpenGL entrypoints: (does nothing on other platforms)
+	init_GL();
 
 	//Set VSYNC + Late Swap (prevents crazy FPS):
-	if (SDL_GL_SetSwapInterval(-1) != 0) {
+	if (!SDL_GL_SetSwapInterval(-1)) {
 		std::cerr << "NOTE: couldn't set vsync + late swap tearing (" << SDL_GetError() << ")." << std::endl;
-		if (SDL_GL_SetSwapInterval(1) != 0) {
+		if (!SDL_GL_SetSwapInterval(1)) {
 			std::cerr << "NOTE: couldn't set vsync (" << SDL_GetError() << ")." << std::endl;
 		}
 	}
 
+	//Set automatic SRGB encoding if framebuffer needs it:
+	glEnable(GL_FRAMEBUFFER_SRGB);
+
 	//Hide mouse cursor (note: showing can be useful for debugging):
 	//SDL_ShowCursor(SDL_DISABLE);
 
-	//------------ init sound output --------------
-	Sound::init();
-
 	//------------ load assets --------------
-
 	call_load_functions();
 
 	//------------ create game mode + make current --------------
-
 	menu = std::make_shared< MenuMode >();
 
 	menu->choices.emplace_back("Select Scene");
@@ -142,19 +134,19 @@ int main(int argc, char **argv) {
 
 	Mode::set_current(menu);
 
+
 	//------------ main loop ------------
 
-	//the window created above is resizable; this inline function will be
-	//called whenever the window is resized, and will update the window_size
-	//and drawable_size variables:
+	//this inline function will be called whenever the window is resized,
+	// and will update the window_size and drawable_size variables:
 	glm::uvec2 window_size; //size of window (layout pixels)
 	glm::uvec2 drawable_size; //size of drawable (physical pixels)
 	//On non-highDPI displays, window_size will always equal drawable_size.
 	auto on_resize = [&](){
 		int w,h;
-		SDL_GetWindowSize(window, &w, &h);
+		SDL_GetWindowSize(Mode::window, &w, &h);
 		window_size = glm::uvec2(w, h);
-		SDL_GL_GetDrawableSize(window, &w, &h);
+		SDL_GetWindowSizeInPixels(Mode::window, &w, &h);
 		drawable_size = glm::uvec2(w, h);
 		glViewport(0, 0, drawable_size.x, drawable_size.y);
 	};
@@ -167,17 +159,31 @@ int main(int argc, char **argv) {
 
 		{ //(1) process any events that are pending
 			static SDL_Event evt;
-			while (SDL_PollEvent(&evt) == 1) {
+			while (SDL_PollEvent(&evt)) {
 				//handle resizing:
-				if (evt.type == SDL_WINDOWEVENT && evt.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+				if (evt.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
 					on_resize();
 				}
 				//handle input:
 				if (Mode::current && Mode::current->handle_event(evt, window_size)) {
 					// mode handled it; great
-				} else if (evt.type == SDL_QUIT) {
+				} else if (evt.type == SDL_EVENT_QUIT) {
 					Mode::set_current(nullptr);
 					break;
+				} else if (evt.type == SDL_EVENT_KEY_DOWN && evt.key.key == SDLK_PRINTSCREEN) {
+					// --- screenshot key ---
+					std::string filename = "screenshot.png";
+					std::cout << "Saving screenshot to '" << filename << "'." << std::endl;
+					glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+					glReadBuffer(GL_FRONT);
+					int w,h;
+					SDL_GetWindowSizeInPixels(Mode::window, &w, &h);
+					std::vector< glm::u8vec4 > data(w*h);
+					glReadPixels(0,0,w,h, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+					for (auto &px : data) {
+						px.a = 0xff;
+					}
+					save_png(filename, glm::uvec2(w,h), data.data(), LowerLeftOrigin);
 				}
 			}
 			if (!Mode::current) break;
@@ -198,28 +204,21 @@ int main(int argc, char **argv) {
 		}
 
 		{ //(3) call the current mode's "draw" function to produce output:
-			//clear the depth+color buffers and set some default state:
-			glClearColor(0.5, 0.5, 0.5, 0.0);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glEnable(GL_DEPTH_TEST);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+		
 			Mode::current->draw(drawable_size);
 		}
 
-		//Finally, wait until the recently-drawn frame is shown before doing it all again:
-		SDL_GL_SwapWindow(window);
+		//Wait until the recently-drawn frame is shown before doing it all again:
+		SDL_GL_SwapWindow(Mode::window);
 	}
-
 
 	//------------  teardown ------------
 
-	SDL_GL_DeleteContext(context);
+	SDL_GL_DestroyContext(context);
 	context = 0;
 
-	SDL_DestroyWindow(window);
-	window = NULL;
+	SDL_DestroyWindow(Mode::window);
+	Mode::window = NULL;
 
 	return 0;
 

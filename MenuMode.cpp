@@ -45,15 +45,15 @@ Load< GLuint > empty_binding(LoadTagDefault, [](){
 //----------------------
 
 bool MenuMode::handle_event(SDL_Event const &e, glm::uvec2 const &window_size) {
-	if (e.type == SDL_KEYDOWN) {
-		if (e.key.keysym.sym == SDLK_ESCAPE) {
+	if (e.type == SDL_EVENT_KEY_DOWN) {
+		if (e.key.key == SDLK_ESCAPE) {
 			if (on_escape) {
 				on_escape();
 			} else {
 				Mode::set_current(background);
 			}
 			return true;
-		} else if (e.key.keysym.sym == SDLK_UP) {
+		} else if (e.key.key == SDLK_UP) {
 			//find previous selectable thing that isn't selected:
 			uint32_t old = selected;
 			selected -= 1;
@@ -61,7 +61,7 @@ bool MenuMode::handle_event(SDL_Event const &e, glm::uvec2 const &window_size) {
 			if (selected >= choices.size()) selected = old;
 
 			return true;
-		} else if (e.key.keysym.sym == SDLK_DOWN) {
+		} else if (e.key.key == SDLK_DOWN) {
 			//find next selectable thing that isn't selected:
 			uint32_t old = selected;
 			selected += 1;
@@ -69,7 +69,7 @@ bool MenuMode::handle_event(SDL_Event const &e, glm::uvec2 const &window_size) {
 			if (selected >= choices.size()) selected = old;
 
 			return true;
-		} else if (e.key.keysym.sym == SDLK_RETURN || e.key.keysym.sym == SDLK_SPACE) {
+		} else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_SPACE) {
 			if (selected < choices.size() && choices[selected].on_select) {
 				choices[selected].on_select();
 			}
@@ -103,6 +103,9 @@ void MenuMode::draw(glm::uvec2 const &drawable_size) {
 			glUseProgram(0);
 			glDisable(GL_BLEND);
 		}
+	} else {
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+		glClear(GL_COLOR_BUFFER_BIT);
 	}
 	glDisable(GL_DEPTH_TEST);
 

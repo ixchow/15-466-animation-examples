@@ -132,46 +132,46 @@ PlantMode::~PlantMode() {
 
 bool PlantMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 	//ignore any keys that are the result of automatic key repeat:
-	if (evt.type == SDL_KEYDOWN && evt.key.repeat) {
+	if (evt.type == SDL_EVENT_KEY_DOWN && evt.key.repeat) {
 		return false;
 	}
 
-	if (evt.type == SDL_KEYDOWN && evt.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+	if (evt.type == SDL_EVENT_KEY_DOWN && evt.key.key == SDLK_ESCAPE) {
 		menu->background = shared_from_this();
 		Mode::set_current(menu);
 		return true;
 	}
 
-	if (evt.type == SDL_KEYDOWN && evt.key.keysym.scancode == SDL_SCANCODE_UP) {
+	if (evt.type == SDL_EVENT_KEY_DOWN && evt.key.key == SDLK_UP) {
 		forward = true;
 		return true;
 	}
-	if (evt.type == SDL_KEYUP && evt.key.keysym.scancode == SDL_SCANCODE_UP) {
+	if (evt.type == SDL_EVENT_KEY_UP && evt.key.key == SDLK_UP) {
 		forward = false;
 		return true;
 	}
-	if (evt.type == SDL_KEYDOWN && evt.key.keysym.scancode == SDL_SCANCODE_DOWN) {
+	if (evt.type == SDL_EVENT_KEY_DOWN && evt.key.key == SDLK_DOWN) {
 		backward = true;
 		return true;
 	}
-		if (evt.type == SDL_KEYUP && evt.key.keysym.scancode == SDL_SCANCODE_DOWN) {
+		if (evt.type == SDL_EVENT_KEY_UP && evt.key.key == SDLK_DOWN) {
 		backward = false;
 		return true;
 	}
 
-	if (evt.type == SDL_MOUSEBUTTONDOWN) {
+	if (evt.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 		if (!mouse_captured) {
-			SDL_SetRelativeMouseMode(SDL_TRUE);
+			SDL_SetWindowRelativeMouseMode(Mode::window, true);
 			mouse_captured = true;
 		}
 	}
-	if (evt.type == SDL_MOUSEBUTTONUP) {
+	if (evt.type == SDL_EVENT_MOUSE_BUTTON_UP) {
 		if (mouse_captured) {
-			SDL_SetRelativeMouseMode(SDL_FALSE);
+			SDL_SetWindowRelativeMouseMode(Mode::window, false);
 			mouse_captured = false;
 		}
 	}
-	if (evt.type == SDL_MOUSEMOTION) {
+	if (evt.type == SDL_EVENT_MOUSE_MOTION) {
 		if (mouse_captured) {
 			float yaw = evt.motion.xrel / float(window_size.y) * camera->fovy;
 			float pitch = -evt.motion.yrel / float(window_size.y) * camera->fovy;
