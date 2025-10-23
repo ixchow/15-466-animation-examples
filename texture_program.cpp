@@ -1,10 +1,10 @@
 #include "texture_program.hpp"
 
-#include "compile_program.hpp"
+#include "gl_compile_program.hpp"
 #include "gl_errors.hpp"
 
 TextureProgram::TextureProgram() {
-	program = compile_program(
+	program = gl_compile_program(
 		"#version 330\n"
 		"uniform mat4 object_to_clip;\n"
 		"uniform mat4x3 object_to_light;\n"

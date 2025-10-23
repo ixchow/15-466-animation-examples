@@ -1,9 +1,9 @@
 #include "depth_program.hpp"
 
-#include "compile_program.hpp"
+#include "gl_compile_program.hpp"
 
 DepthProgram::DepthProgram() {
-	program = compile_program(
+	program = gl_compile_program(
 		"#version 330\n"
 		"uniform mat4 object_to_clip;\n"
 		"layout(location=0) in vec4 Position;\n" //note: layout keyword used to make sure that the location-0 attribute is always bound to something

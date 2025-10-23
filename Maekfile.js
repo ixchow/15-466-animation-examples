@@ -118,7 +118,7 @@ const game_names = [
 	maek.CPP('load_save_png.cpp'),
 	maek.CPP('main.cpp'),
 	maek.CPP('data_path.cpp'),
-	maek.CPP('compile_program.cpp'),
+	maek.CPP('gl_compile_program.cpp'),
 	maek.CPP('vertex_color_program.cpp'),
 	maek.CPP('bone_vertex_color_program.cpp'),
 	maek.CPP('texture_program.cpp'),

@@ -1,7 +1,7 @@
 #include "MenuMode.hpp"
 
 #include "Load.hpp"
-#include "compile_program.hpp"
+#include "gl_compile_program.hpp"
 #include "draw_text.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -13,7 +13,7 @@
 GLint fade_program_color = -1;
 
 Load< GLuint > fade_program(LoadTagInit, [](){
-	GLuint *ret = new GLuint(compile_program(
+	GLuint *ret = new GLuint(gl_compile_program(
 		"#version 330\n"
 		"void main() {\n"
 		"	gl_Position = vec4(4 * (gl_VertexID & 1) - 1,  2 * (gl_VertexID & 2) - 1, 0.0, 1.0);\n"

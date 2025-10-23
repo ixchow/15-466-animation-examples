@@ -1,15 +1,15 @@
-#include "compile_program.hpp"
+#include "gl_compile_program.hpp"
 
 #include <vector>
 #include <string>
 #include <stdexcept>
 #include <iostream>
 
-static GLuint compile_shader(GLenum type, std::string const &source) {
+static GLuint gl_compile_shader(GLenum type, std::string const &source) {
 	GLuint shader = glCreateShader(type);
 	GLchar const *str = source.c_str();
-	GLint length = GLint(source.size());
-	glShaderSource(shader, 1, &str, &length);
+	GLint str_length = GLint(source.size());
+	glShaderSource(shader, 1, &str, &str_length);
 	glCompileShader(shader);
 	GLint compile_status = GL_FALSE;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
@@ -27,13 +27,13 @@ static GLuint compile_shader(GLenum type, std::string const &source) {
 	return shader;
 }
 
-GLuint compile_program(
+GLuint gl_compile_program(
 	std::string const &vertex_shader_source,
 	std::string const &fragment_shader_source
 	) {
 
-	GLuint vertex_shader = compile_shader(GL_VERTEX_SHADER, vertex_shader_source);
-	GLuint fragment_shader = compile_shader(GL_FRAGMENT_SHADER, fragment_shader_source);
+	GLuint vertex_shader = gl_compile_shader(GL_VERTEX_SHADER, vertex_shader_source);
+	GLuint fragment_shader = gl_compile_shader(GL_FRAGMENT_SHADER, fragment_shader_source);
 
 	GLuint program = glCreateProgram();
 	glAttachShader(program, vertex_shader);

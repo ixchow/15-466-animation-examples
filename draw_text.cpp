@@ -4,7 +4,7 @@
 #include "Load.hpp"
 #include "MeshBuffer.hpp"
 #include "data_path.hpp"
-#include "compile_program.hpp"
+#include "gl_compile_program.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -33,7 +33,7 @@ GLint text_program_mvp_mat4 = -1;
 GLint text_program_color_vec4 = -1;
 
 Load< GLuint > text_program(LoadTagInit, [](){
-	GLuint *ret = new GLuint(compile_program(
+	GLuint *ret = new GLuint(gl_compile_program(
 		"#version 330\n"
 		"uniform mat4 mvp;\n"
 		"in vec4 Position;\n"
