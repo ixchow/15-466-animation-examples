@@ -51,6 +51,7 @@ if (maek.OS === "windows") {
 		`-I${NEST_LIBS}/SDL3/include`, `-D_THREAD_SAFE`,
 		`-I${NEST_LIBS}/glm/include`,
 		`-I${NEST_LIBS}/libpng/include`,
+		`-Wno-maybe-uninitialized`, //HACK: work around warning in std_function.h
 	);
 	maek.options.LINKLibs.push(
 		//linker flags for nest libraries:
